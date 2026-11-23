@@ -1,0 +1,58 @@
+{
+  "hero-balcony.webp": {
+    "width": 980,
+    "height": 500,
+    "source": "01_balcony_glazing.jpg",
+    "bytes": 105188,
+    "quality": 84
+  },
+  "production-line.webp": {
+    "width": 495,
+    "height": 321,
+    "source": "10_production_line.jpg",
+    "bytes": 26074,
+    "quality": 84
+  },
+  "work-entrance.webp": {
+    "width": 622,
+    "height": 1280,
+    "source": "02_glazed_entrance.jpg",
+    "bytes": 147086,
+    "quality": 80
+  },
+  "work-installation.webp": {
+    "width": 900,
+    "height": 1200,
+    "source": "06_installation.jpg",
+    "bytes": 178462,
+    "quality": 68
+  },
+  "work-facade.webp": {
+    "width": 900,
+    "height": 475,
+    "source": "05_facade_windows.jpg",
+    "bytes": 23184,
+    "quality": 80
+  },
+  "work-patio.webp": {
+    "width": 650,
+    "height": 910,
+    "source": "04_patio_door.jpg",
+    "bytes": 83142,
+    "quality": 80
+  },
+  "work-detail.webp": {
+    "width": 900,
+    "height": 1200,
+    "source": "09_window_exterior.jpg",
+    "bytes": 144306,
+    "quality": 80
+  },
+  "work-house.webp": {
+    "width": 900,
+    "height": 506,
+    "source": "03_house_windows.jpg",
+    "bytes": 56526,
+    "quality": 80
+  }
+}
