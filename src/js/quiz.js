@@ -16,7 +16,6 @@ const state = {
   noSizes: false,
   works: new Set(),
   region: '',
-  city: '',
   name: '',
   phone: '',
   submitted: false,
@@ -149,30 +148,23 @@ const renderContactsStep = () => {
   <h3 class="quiz-question" tabindex="-1">${esc(step.title)}</h3>
   <p class="quiz-hint">${esc(step.hint)}</p>
 
-  <div class="mt-5">
-    <span class="field-label">Область</span>
-    <div class="grid grid-cols-2 gap-2 sm:grid-cols-4" role="group" aria-label="Область">
-      ${company.quiz.regions
-        .map(
-          (region) => `
-        <button type="button" class="chip justify-center !px-2" data-region="${esc(region)}" aria-pressed="${state.region === region}">
-          ${esc(region)}
-        </button>`,
-        )
-        .join('')}
-    </div>
-    <p class="field-error" data-error="region"></p>
-  </div>
+  <label class="mt-5 block">
+    <span class="field-label">Город / область *</span>
+    <span class="field-wrap" data-wrap="region">
+      <select class="field field-select" data-field="region" required aria-required="true">
+        <option value="" disabled ${state.region ? '' : 'selected'}>Выберите город или область</option>
+        ${company.quiz.cityOptions
+          .map(
+            (option) =>
+              `<option value="${esc(option)}" ${state.region === option ? 'selected' : ''}>${esc(option)}</option>`,
+          )
+          .join('')}
+      </select>
+    </span>
+    <span class="field-error" data-error="region"></span>
+  </label>
 
   <div class="size-grid">
-    <label>
-      <span class="field-label">Город или район</span>
-      <span class="field-wrap" data-wrap="city">
-        <input class="field" data-field="city" type="text" autocomplete="address-level2"
-               placeholder="Молодечно" value="${esc(state.city)}" />
-      </span>
-      <span class="field-error" data-error="city"></span>
-    </label>
     <label>
       <span class="field-label">Имя</span>
       <span class="field-wrap" data-wrap="name">
@@ -181,38 +173,54 @@ const renderContactsStep = () => {
       </span>
       <span class="field-error" data-error="name"></span>
     </label>
+    <label>
+      <span class="field-label">Телефон</span>
+      <span class="field-wrap" data-wrap="phone">
+        <input class="field" data-field="phone" id="quiz-phone" type="tel" inputmode="tel"
+               autocomplete="tel" placeholder="+375 (29) 000-00-00" value="${state.phone ? formatPhone(state.phone) : '+375'}" />
+      </span>
+      <span class="field-error" data-error="phone"></span>
+    </label>
   </div>
-
-  <label class="mt-3 block">
-    <span class="field-label">Телефон</span>
-    <span class="field-wrap" data-wrap="phone">
-      <input class="field" data-field="phone" id="quiz-phone" type="tel" inputmode="tel"
-             autocomplete="tel" placeholder="+375 (29) 000-00-00" value="${state.phone ? formatPhone(state.phone) : '+375'}" />
-    </span>
-    <span class="field-error" data-error="phone"></span>
-  </label>
 
   ${nav({ nextLabel: 'Отправить заявку' })}
   `;
 };
 
-const renderFinal = () => {
+/** Заявка одним объектом: город и область входят в её состав. */
+const buildOrder = () => {
   const product = company.quiz.products.find((item) => item.id === state.product);
-  const works = company.quiz.works.filter((item) => state.works.has(item.id)).map((item) => item.label);
-  const sizeText = state.noSizes
-    ? company.quiz.sizesUnknownLabel
-    : `${state.width} × ${state.height} мм`;
+  return {
+    product: product ? product.label : '',
+    size: state.noSizes
+      ? company.quiz.sizesUnknownLabel
+      : `${state.width} × ${state.height} мм`,
+    works: company.quiz.works.filter((item) => state.works.has(item.id)).map((item) => item.label),
+    region: state.region,
+    name: state.name.trim(),
+    phone: formatPhone(state.phone),
+  };
+};
+
+const renderFinal = () => {
+  const order = buildOrder();
+  const sizeText = order.size;
 
   return `
-  <h3 class="quiz-question" tabindex="-1">Параметры собраны</h3>
+  <h3 class="quiz-question" tabindex="-1">Заявка сформирована</h3>
   <p class="quiz-hint">Проверьте данные. Если что-то не так, сбросьте заявку и заполните заново.</p>
 
+  <p class="quiz-status" role="status">
+    <span class="status-dot" aria-hidden="true"></span>
+    <span>Город / область: <b>${esc(order.region)}</b>. Заявка собрана и готова к отправке менеджеру вместе с этим адресом.</span>
+  </p>
+
   <dl class="quiz-summary">
-    <div><dt>Изделие</dt><dd>${esc(product ? product.label : 'Не выбрано')}</dd></div>
+    <div><dt>Изделие</dt><dd>${esc(order.product || 'Не выбрано')}</dd></div>
     <div><dt>Размеры</dt><dd>${esc(sizeText)}</dd></div>
-    <div><dt>Комплектация и работы</dt><dd>${esc(works.length ? works.join(', ') : 'Без дополнительных работ')}</dd></div>
-    <div><dt>Область и город</dt><dd>${esc(`${state.region} область, ${state.city.trim()}`)}</dd></div>
-    <div><dt>Контакт</dt><dd>${esc(state.name.trim())}, ${esc(formatPhone(state.phone))}</dd></div>
+    <div><dt>Комплектация и работы</dt><dd>${esc(order.works.length ? order.works.join(', ') : 'Без дополнительных работ')}</dd></div>
+    <div><dt>Город / область</dt><dd>${esc(order.region)}</dd></div>
+    <div><dt>Контакт</dt><dd>${esc(order.name)}, ${esc(order.phone)}</dd></div>
   </dl>
 
   <div class="quiz-note">
@@ -252,7 +260,7 @@ const setError = (name, message) => {
 const focusFirstError = () => {
   const errorNode = els.panel.querySelector('.field-error:not(:empty)');
   if (!errorNode) return;
-  const field = errorNode.closest('label')?.querySelector('input, button');
+  const field = errorNode.closest('label')?.querySelector('input, select, button');
   if (field) field.focus();
 };
 
@@ -288,17 +296,10 @@ const validateContacts = () => {
   let valid = true;
 
   if (!state.region) {
-    setError('region', 'Выберите область');
+    setError('region', 'Выберите город или область');
     valid = false;
   } else {
     setError('region', '');
-  }
-
-  if (state.city.trim().length < 2) {
-    setError('city', 'Укажите город или район');
-    valid = false;
-  } else {
-    setError('city', '');
   }
 
   if (state.name.trim().length < 2) {
@@ -326,6 +327,8 @@ const goNext = () => {
   if (step.id === 'contacts') {
     if (!validateContacts()) return;
     state.submitted = true;
+    // Город и область входят в объект заявки: отсюда данные уйдут в Telegram на боевой версии.
+    document.dispatchEvent(new CustomEvent('steklopak:order', { detail: buildOrder() }));
     render(true);
     return;
   }
@@ -394,18 +397,15 @@ const bindStep = (stepId) => {
   }
 
   if (stepId === 'contacts') {
-    panel.querySelectorAll('[data-region]').forEach((chip) => {
-      chip.addEventListener('click', () => {
-        state.region = chip.dataset.region;
-        panel.querySelectorAll('[data-region]').forEach((other) => {
-          other.setAttribute('aria-pressed', String(other === chip));
-        });
-        setError('region', '');
-      });
-    });
-
     panel.querySelectorAll('[data-field]').forEach((input) => {
       const field = input.dataset.field;
+      if (field === 'region') {
+        input.addEventListener('change', () => {
+          state.region = input.value;
+          setError('region', '');
+        });
+        return;
+      }
       if (field === 'phone') {
         input.addEventListener('input', () => {
           state.phone = normalizeDigits(input.value);
@@ -442,7 +442,6 @@ const resetQuiz = () => {
   state.noSizes = false;
   state.works = new Set();
   state.region = '';
-  state.city = '';
   state.name = '';
   state.phone = '';
   state.submitted = false;

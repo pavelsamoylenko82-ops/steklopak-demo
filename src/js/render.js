@@ -72,10 +72,10 @@ export const hero = () => `
           </span>
         </p>
         <h1 class="hero-title mt-5" data-hero-fade>${esc(company.hero.title)}</h1>
-        <div class="mt-5 max-w-[54ch] space-y-2.5 text-[16.5px] leading-[1.6] text-ink-muted sm:text-[17px]" data-hero-fade>
+        <div class="hero-body max-w-[54ch] space-y-2.5 text-[16.5px] leading-[1.6] text-ink-muted sm:text-[17px]" data-hero-fade>
           ${company.hero.lines.map((line) => `<p>${esc(line)}</p>`).join('')}
         </div>
-        <div class="mt-7 flex flex-col gap-3 sm:flex-row sm:gap-3" data-hero-fade>
+        <div class="hero-cta flex flex-col gap-3 sm:flex-row sm:gap-3" data-hero-fade>
           <a class="btn btn-primary" href="#quiz">${esc(company.cta.primary)}</a>
           <a class="btn btn-ghost" href="tel:${company.primaryPhoneTel}">${phoneIcon(17)} ${esc(company.cta.call)}</a>
         </div>
